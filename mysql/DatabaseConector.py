@@ -22,14 +22,24 @@
 # ● description: descripción del pokemon. Tipo string.
 # ● pokeGame: nombre del juego pokemon. . Tipo string
 import mysql.connector
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 class DatabaseConector:
-    def __init__(self, host, user, password, database,port):
+    def __init__(self):
+        self.host = os.getenv("DB_HOST")
+        self.user = os.getenv("DB_USER")
+        self.password = os.getenv("DB_PASSWORD")
+        self.database = os.getenv("DB_DATABASE")
+        self.port = int(os.getenv("DB_PORT"))
+        
         self.connection = mysql.connector.connect(
-            host=host,
-            user=user,
-            port=port,
-            password=password,
-            database=database
+            host=self.host,
+            user=self.user,
+            port=self.port,
+            password=self.password,
+            database=self.database
         )
         self.cursor = self.connection.cursor()
     
