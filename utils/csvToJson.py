@@ -13,8 +13,8 @@ def csvToJson(csv_file:str, json_file:str):
     with open(json_file, 'w', encoding='utf-8') as json_file:
         json_file.write(json.dumps(data, indent=4))
         
-def main():
-    csvToJson('data/locations.csv', 'data/locations.json')
-    csvToJson('data/skills.csv', 'data/skills.json')
-    csvToJson('data/has_skill.csv', 'data/has_skill.json')
-    csvToJson('data/pokemon.csv', 'data/pokemon.json')
+# def main():
+#     csvToJson('data/locations.csv', 'data/locations.json')
+#     csvToJson('data/skills.csv', 'data/skills.json')
+#     csvToJson('data/has_skill.csv', 'data/has_skill.json')
+#     csvToJson('data/pokemon.csv', 'data/pokemon.json')
