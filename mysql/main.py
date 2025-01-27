@@ -1,22 +1,23 @@
-from utils.data_loader import load_json_data
-from controllers.mysql_controller import load_locations, load_skills, load_has_skills, load_pokemons
-from models.mysql_model import create_tables
+# main.py
+from controllers.mysql_controller import MySQLController
+from models.entities import Person, Skill, Location, Pokemon, HasSkill
 
 def main():
+    mysql_controller = MySQLController()
 
-    create_tables()
+    # Cargar nodos
+    print("Cargando nodos...")
+    mysql_controller.load_nodes('locations.json', 'locations', Location)
+    mysql_controller.load_nodes('skills.json', 'skills', Skill)
+    mysql_controller.load_nodes('persons.json', 'persons', Person)
+    mysql_controller.load_nodes('pokemons.json', 'pokemons', Pokemon)
 
-    # Cargar datos de los archivos JSON
-    locations_data = load_json_data('../data/locations.json')
-    skills_data = load_json_data('../data/skills.json')
-    has_skills_data = load_json_data('../data/has_skill.json')
-    pokemons_data = load_json_data('../data/pokemon.json')
+    # Cargar relaciones
+    print("Cargando relaciones...")
+    mysql_controller.load_relationships('has_skill.json', 'has_skill', extra_fields=["proficiency"])
 
-    # Cargar los datos en la base de datos
-    load_locations(locations_data)
-    load_skills(skills_data)
-    load_has_skills(has_skills_data)
-    load_pokemons(pokemons_data)
+    print("Datos cargados correctamente.")
+    mysql_controller.close_connection()
 
 if __name__ == "__main__":
     main()
