@@ -8,24 +8,21 @@ class Neo4jModel:
     def close(self):
         self.driver.close()
 
-    def create_person(self, person):
-        query = """
-        CREATE (:Person {id: $id, name: $name, age: $age})
+    def create_node(self, label, **properties):
         """
+        Crea un nodo en Neo4j con una etiqueta específica y propiedades.
+        """
+        query = f"CREATE (n:{label} {{ {', '.join(f'{key}: ${key}' for key in properties.keys())} }})"
         with self.driver.session() as session:
-            session.run(query, id=person.id, name=person.name, age=person.age)
+            session.run(query, **properties)
 
-    def create_company(self, company):
-        query = """
-        CREATE (:Company {id: $id, name: $name, sector: $sector})
+    def create_relationship(self, start_label, end_label, rel_type, start_key, end_key, **properties):
+        """
+        Crea una relación entre dos nodos en Neo4j.
+        """
+        query = f"""
+        MATCH (start:{start_label} {{id: $start_key}}), (end:{end_label} {{id: $end_key}})
+        CREATE (start)-[r:{rel_type} {{ {', '.join(f'{key}: ${key}' for key in properties.keys())} }}]->(end)
         """
         with self.driver.session() as session:
-            session.run(query, id=company.id, name=company.name, sector=company.sector)
-
-    def create_works_at_relationship(self, person_id, company_id, role, location_id):
-        query = """
-        MATCH (p:Person {id: $person_id}), (c:Company {id: $company_id})
-        CREATE (p)-[:WORKS_AT {role: $role, location_id: $location_id}]->(c)
-        """
-        with self.driver.session() as session:
-            session.run(query, person_id=person_id, company_id=company_id, role=role, location_id=location_id)
+            session.run(query, start_key=start_key, end_key=end_key, **properties)

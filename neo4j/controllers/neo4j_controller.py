@@ -7,24 +7,25 @@ class Neo4jController:
     def __init__(self):
         self.model = Neo4jModel()
 
-    def load_persons(self, file_path):
-        persons = load_data(file_path, Person)
-        for person in persons:
-            self.model.create_person(person)
+    def load_nodes(self, file_path, label, entity_class):
+        """
+        Carga nodos en Neo4j desde un archivo CSV.
+        """
+        entities = load_data(file_path, entity_class)
+        for entity in entities:
+            self.model.create_node(label, **entity.__dict__)
 
-    def load_companies(self, file_path):
-        companies = load_data(file_path, Empresa)
-        for company in companies:
-            self.model.create_company(company)
-
-    def load_works_at_relations(self, file_path):
+    def load_relationships(self, file_path, start_label, end_label, rel_type, start_key_field, end_key_field, extra_fields=None):
+        """
+        Carga relaciones en Neo4j desde un archivo CSV.
+        """
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
             for row in reader:
-                person_id = int(row['person_id'])
-                role = row['rol']
-                location_id = int(row['location_id'])
-                self.model.create_works_at_relationship(person_id, location_id, role, location_id)
+                start_key = int(row[start_key_field])
+                end_key = int(row[end_key_field])
+                extra_properties = {field: row[field] for field in (extra_fields or [])}
+                self.model.create_relationship(start_label, end_label, rel_type, start_key, end_key, **extra_properties)
 
     def close_connection(self):
         self.model.close()
