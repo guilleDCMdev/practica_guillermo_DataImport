@@ -1,23 +1,24 @@
-# main.py
+from utils.config import get_config
+from utils.data_loader import load_json
 from controllers.mysql_controller import MySQLController
-from models.entities import Person, Skill, Location, Pokemon, HasSkill
 
-def main():
-    mysql_controller = MySQLController()
+if __name__ == '__main__':
+    config = get_config()
+    controller = MySQLController(config)
 
-    # Cargar nodos
-    print("Cargando nodos...")
-    mysql_controller.load_nodes('locations.json', 'locations', Location)
-    mysql_controller.load_nodes('skills.json', 'skills', Skill)
-    mysql_controller.load_nodes('persons.json', 'persons', Person)
-    mysql_controller.load_nodes('pokemons.json', 'pokemons', Pokemon)
+    datasets = {
+        'locations': '../data/locations.json',
+        'skills': '../data/skills.json',
+        'has_skill': '../data/has_skill.json',
+        'pokemon': '../data/pokemon.json'
+    }
 
-    # Cargar relaciones
-    print("Cargando relaciones...")
-    mysql_controller.load_relationships('has_skill.json', 'has_skill', extra_fields=["proficiency"])
+    controller.create_table('locations', {'id': 'INT PRIMARY KEY', 'name': 'VARCHAR(255)', 'city': 'VARCHAR(255)'})
+    controller.create_table('skills', {'id': 'INT PRIMARY KEY', 'name': 'VARCHAR(255)'})
+    controller.create_table('has_skill', {'person_id': 'INT', 'skill_id': 'INT', 'proficiency': 'VarChar(255)'})
+    controller.create_table('pokemon', {'pokemon_id': 'INT', 'description': 'TEXT', 'pokeGame': 'VARCHAR(255)'})
 
-    print("Datos cargados correctamente.")
-    mysql_controller.close_connection()
-
-if __name__ == "__main__":
-    main()
+    for table, file_path in datasets.items():
+        data = load_json(file_path)
+        for record in data:
+            controller.insert_data(table, record)
