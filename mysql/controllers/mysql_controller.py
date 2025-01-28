@@ -4,6 +4,10 @@ class MySQLController:
     def __init__(self, config):
         self.model = MySQLModel(config)
 
+    def create_database(self, database):
+        query = f"CREATE DATABASE IF NOT EXISTS {database}"
+        self.model.execute_query(query, None)
+
     def insert_data(self, table, data):
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['%s'] * len(data))

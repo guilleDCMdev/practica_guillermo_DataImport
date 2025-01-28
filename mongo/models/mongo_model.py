@@ -13,6 +13,12 @@ class MongoModel:
     def close(self):
         self.client.close()
 
+    def create_database(self, database):
+        self.client[database]
+
+    def create_collection(self, collection_name):
+        self.db.create_collection(collection_name)
+
     def insert_many(self, collection_name, data):
         collection = getattr(self.db, collection_name)
         collection.insert_many(data)
