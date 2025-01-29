@@ -1,4 +1,4 @@
-from mongo.starterMongoMain import MongoLoader
+from monGo.starterMongoMain import MongoLoader
 from mySql.starterMysqlMain import MySQLLoader
 from neo4J.StarterNeo4jMain import Neo4jLoader
 
