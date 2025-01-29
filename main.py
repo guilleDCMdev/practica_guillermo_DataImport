@@ -1,3 +1,8 @@
+from mongo.controllers.mongo_controller import MongoController
+from mySql.controllers.mysql_controller import MySQLController
+from neo4J.controllers.neo4j_controller import Neo4jController
+
+
 def main_menu():
     while True:
         print("\nMenú:")
@@ -15,136 +20,139 @@ def main_menu():
         
         choice = input("Seleccione una opción: ")
         
-        if choice == "0":
-            print("Saliendo del programa...")
-            break
-        elif choice == "1":
-            empresa = input("Ingrese el nombre de la empresa: ")
-            buscar_personas_por_empresa(empresa)
+        if choice == "1":
+            personas_y_roles_empresa()
         elif choice == "2":
-            rol = input("Ingrese el rol a buscar: ")
-            buscar_personas_por_rol(rol)
+            personas_con_rol_diferentes_empresas()
         elif choice == "3":
-            persona1 = input("Ingrese el nombre de la primera persona: ")
-            persona2 = input("Ingrese el nombre de la segunda persona: ")
-            buscar_empresas_comunes(persona1, persona2)
+            empresas_comunes_entre_personas()
         elif choice == "4":
-            equipo = input("Ingrese el nombre del equipo: ")
-            buscar_personas_por_equipo(equipo)
+            personas_y_funciones_equipo()
         elif choice == "5":
-            mostrar_todos_los_equipos()
+            equipos_con_numero_personas()
         elif choice == "6":
-            mostrar_equipos_por_proyectos()
+            equipos_con_numero_proyectos()
         elif choice == "7":
-            persona = input("Ingrese el nombre de la persona: ")
-            proficiency = input("Ingrese el nivel mínimo de proficiency: ")
-            buscar_skills_por_persona(persona, proficiency)
+            skills_nivel_persona()
         elif choice == "8":
-            buscar_personas_con_skills_similares()
+            personas_con_skills_similares()
         elif choice == "9":
-            buscar_proyecto_pokemon_variedad()
+            proyecto_con_pokemon_diferentes_tipos()
         elif choice == "10":
-            ubicacion = input("Ingrese el nombre de la ubicación: ")
-            buscar_equipos_por_ubicacion(ubicacion)
+            equipos_ubicacion_especifica()
+        elif choice == "0":
+            print("Saliendo...")
+            break
         else:
-            print("Opción no válida. Intente nuevamente.")
+            print("Opción no válida. Intente de nuevo.")
 
+def personas_y_roles_empresa():
+    empresa_name = input("Ingrese el nombre de la empresa: ")  
+    controller = Neo4jController()
+    personas_roles = controller.get_personas_y_roles_empresa(empresa_name)
+    
+    if personas_roles:
+        print(f"\nPersonas y sus roles en la empresa '{empresa_name}':")
+        for persona_rol in personas_roles:
+            print(f"Persona: {persona_rol['Persona']}, Rol: {persona_rol['Rol']}")
+    else:
+        print(f"No se encontraron personas en la empresa '{empresa_name}'.") 
+    controller.close_connection()
 
-# Datos neo4j
-# persons.csv
-# ● id: Identicador único para cada persona. Tipo entero.
-# ● name: Nombre de la persona. Tipo String.
-# ● age: Edad de la persona. Tipo entero.
-# empresas.csv:
-# ● id: Identicador único para cada empresa. Tipo entero.
-# ● name: Nombre de la empresa. Tipo String.
-# ● sector: Sector en el que opera la empresa. Tipo cadena.
-# works_at.csv:
-# ● rol: Rol o cargo de la persona en la empresa. Tipo String.
-# ● location_id: Clave foránea referida al identicador único de una
-# localización asociada al proyecto. Tipo entero.
+def personas_con_rol_diferentes_empresas():
+    controller = Neo4jController()
+    personas_roles_empresas = controller.personas_con_rol_diferentes_empresas()
+    
+    if personas_roles_empresas:
+        print("\nPersonas con el mismo rol en diferentes empresas:")
+        for persona in personas_roles_empresas:
+            print(f"Persona: {persona['Persona']}, Rol: {persona['Rol']}, Empresas: {', '.join(persona['Empresas'])}")
+    else:
+        print("No se encontraron personas con el mismo rol en diferentes empresas.")
+    controller.close_connection()
 
+def empresas_comunes_entre_personas():
+    persona1 = input("Ingrese el nombre de la primera persona: ")
+    persona2 = input("Ingrese el nombre de la segunda persona: ")
+    controller = Neo4jController()
+    empresas_comunes = controller.empresas_comunes_entre_personas(persona1, persona2)
+    
+    if empresas_comunes:
+        print(f"\nEmpresas comunes entre {persona1} y {persona2}:")
+        for empresa in empresas_comunes:
+            print(f"- {empresa}")
+    else:
+        print(f"No se encontraron empresas comunes entre {persona1} y {persona2}.")
+    
+    controller.close_connection()
 
-# Datos MySQL
-# locations.json
-# ● id: Identicador único para cada ubicación.Tipo entero.
-# ● name: Nombre de la localización. Tipo cadena.
-# ● city: Ciudad donde se encuentra la ubicación.Tipo string.
-# skills.json:
-# ● id: Identicador único para cada habilidad.Tipo entero.
-# ● name: Nombre de la habilidad. Tipo string
-# has_skill.json
-# ● person_id:Clave foránea que hace referencia al identicador único de una
-# persona.Tipo Integer.
-# ● skill_id: Clave foránea referida al identicador único de una habilidad.Tipo
-# entero.
-# ● prociency: Nivel de competencia de la persona en la habilidad
-# especicada. Tipo string.
-# pokemon.json
-# ● pokemon_id:identicador único de pokemon.Tipo Integer.
-# ● description: descripción del pokemon. Tipo string.
-# ● pokeGame: nombre del juego pokemon. . Tipo string.
+def personas_y_funciones_equipo():
+    team_id = int(input("Ingrese el ID del equipo: "))
+    controller = MongoController()
+    personas = controller.get_personas_por_equipo(team_id)
+    
+    if personas:
+        print(f"\nPersonas y sus roles en el equipo {team_id}:")
+        for persona in personas:
+            print(f"Persona: {persona['name']}, Rol: {persona['rol']}")
+    else:
+        print("No se encontraron personas en este equipo.")
+    
+    controller.close_connection()
 
-# Datos de mongo
-# projects.csv
-# ● project_id: Identicador único para cada proyecto. Tipo entero.
-# ● name: Nombre del proyecto. Tipo string.
-# ● description: Descripción del proyecto. Tipo cadena.
-# ● location_id: Clave foránea referida al identicador único de una
-# localización asociada al proyecto. Tipo entero.
-# ● company_id: Clave foránea referida al identicador único de una empresa
-# asociada al proyecto.Tipo entero.
-# teams.csv
-# ● team_id:Identicador único para cada equipo. Tipo entero.
-# ● name: Nombre del equipo.Tipo String.
-# ● description: Descripción del equipo: Descripción del equipo. Tipo cadena.
-# ● project_id: Clave foránea que hace referencia al identicador único de un
-# proyecto. Tipo entero.
-# works_in_team.csv
-# ● person_id: Clave foránea que hace referencia al identicador único de una
-# persona. Tipo entero.
-# ● team_id: Clave foránea que hace referencia al identicador único de un
-# equipo. Tipo entero.
-# ● rol: Rol de la persona dentro del equipo. Tipo String.
-# favourite_pokemon.json
-# ● person_id: Clave foránea que hace referencia al identicador único de una
-# persona. Tipo entero.
-# ● pokemon_id Clave foránea que hace referencia al identicador único de un
-# pokemon. Tipo entero.
-# ● dateCaptured: fecha en la que el pokemon se capturó. Tipo String.
+def equipos_con_numero_personas():
+    controller = MongoController()
+    equipos = controller.get_equipos_con_num_personas()
+    
+    for equipo in equipos:
+        print(f"Equipo: {equipo['_id']}, Número de personas: {equipo['num_personas']}")
+    
+    controller.close_connection()
 
+def equipos_con_numero_proyectos():
+    controller = MongoController()
+    equipos = controller.get_equipos_con_num_proyectos()
+    
+    for equipo in equipos:
+        print(f"Equipo: {equipo['_id']}, Número de proyectos: {equipo['num_proyectos']}")
+    
+    controller.close_connection()
 
+def skills_nivel_persona():
+    proficiency = input("Ingrese el nivel de proficiency: ")
+    controller = MySQLController()
+    skills = controller.get_skills_por_proficiency(proficiency)
+    
+    for skill in skills:
+        print(f"Persona: {skill['name']}, Skill: {skill['skill_name']}, Proficiency: {skill['proficiency']}")
+    
+    controller.close_connection()
 
-def buscar_personas_por_empresa(empresa):
+def personas_con_skills_similares():
+    controller = MySQLController()
+    personas = controller.get_personas_con_skills_similares()
+    
+    for persona in personas:
+        print(f"{persona['Persona1']} y {persona['Persona2']} comparten la skill: {persona['Skill']}")
+    
+    controller.close_connection()
 
-    print(f"Buscando personas en la empresa {empresa}...")
+def proyecto_con_pokemon_diferentes_tipos():
+    controller = MongoController()
+    proyecto = controller.get_proyecto_con_pokemon_distintos()
+    print(f"Proyecto con más diversidad de Pokémon: {proyecto}")
+    
+    controller.close_connection()
 
-def buscar_personas_por_rol(rol):
-    print(f"Buscando personas con el rol {rol} en diferentes empresas...")
-
-def buscar_empresas_comunes(persona1, persona2):
-    print(f"Buscando empresas comunes entre {persona1} y {persona2}...")
-
-def buscar_personas_por_equipo(equipo):
-    print(f"Buscando personas en el equipo {equipo}...")
-
-def mostrar_todos_los_equipos():
-    print("Mostrando todos los equipos con el número de personas que los componen...")
-
-def mostrar_equipos_por_proyectos():
-    print("Mostrando equipos con el número total de proyectos asociados...")
-
-def buscar_skills_por_persona(persona, proficiency):
-    print(f"Buscando skills de {persona} con proficiency {proficiency}...")
-
-def buscar_personas_con_skills_similares():
-    print("Buscando personas con skills similares...")
-
-def buscar_proyecto_pokemon_variedad():
-    print("Buscando proyecto con mayor variedad de pokemons favoritos en el equipo...")
-
-def buscar_equipos_por_ubicacion(ubicacion):
-    print(f"Buscando equipos en la ubicación {ubicacion}...")
+def equipos_ubicacion_especifica():
+    ubicacion = input("Ingrese el nombre de la ubicación: ")
+    controller = MongoController()
+    equipos = controller.get_equipos_por_ubicacion(ubicacion)
+    
+    for equipo in equipos:
+        print(f"Equipo: {equipo['name']} - Personas: {equipo['personas']} - Proyectos: {equipo['proyectos']}")
+    
+    controller.close_connection()
 
 if __name__ == "__main__":
     main_menu()

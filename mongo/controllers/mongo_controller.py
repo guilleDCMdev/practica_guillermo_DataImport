@@ -24,3 +24,11 @@ class MongoController:
 
     def close_connection(self):
         self.model.close()
+
+    def get_personas_por_equipo(self, team_id):
+        query = {"team_id": team_id}
+        personas = self.model.teams_collection.find_one(query, {"_id": 0, "team_members": 1})
+        if personas:
+            return personas["team_members"]
+        return None
+    
