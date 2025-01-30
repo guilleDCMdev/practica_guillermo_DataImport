@@ -30,40 +30,40 @@ class Neo4jController:
     def close_connection(self):
         self.model.close()
 
-    def get_personas_y_roles_empresa(self, empresa_name):
-        query = """
-        MATCH (p:Person)-[w:WORKS_AT]->(e:Company)
-        WHERE e.name = $empresa_name
-        RETURN p.name AS Persona, w.rol AS Rol
-        """
-        with self.model.driver.session() as session:
-            result = session.run(query, empresa_name=empresa_name)
-            personas_roles = [{"Persona": record["Persona"], "Rol": record["Rol"]} for record in result]
-        return personas_roles
+    # Personas y sus roles en una empresa concreta
+    # MATCH (p:Person)-[r:WORKS_AT]->(e:Company)
+    # WHERE e.name = "NombreDeLaEmpresa"
+    # RETURN p.name, r.rol
+    def personas_y_roles_empresa(self, empresa):
+        query = f"MATCH (p:Person)-[r:WORKS_AT]->(e:Company) WHERE e.name = '{empresa}' RETURN p.name, r.rol"
+        return self.model.execute_query(query)
     
+    # MATCH (p1:Person)-[r1:WORKS_AT]->(e1:Company),
+    #   (p2:Person)-[r2:WORKS_AT]->(e2:Company)
+    # WHERE p1 <> p2 AND r1.rol = r2.rol AND e1 <> e2
+    # RETURN p1.name, e1.name, r1.rol, p2.name, e2.name
     def personas_con_rol_diferentes_empresas(self):
-        query = """
-        MATCH (p:Person)-[w:WORKS_AT]->(e:Company)
-        WITH p, w.rol AS rol, COLLECT(DISTINCT e.name) AS empresas
-        WHERE SIZE(empresas) > 1
-        RETURN p.name AS Persona, rol, empresas
-        """
-        
-        with self.model.driver.session() as session:
-            result = session.run(query)
-            personas_roles_empresas = [{"Persona": record["Persona"], "Rol": record["rol"], "Empresas": record["empresas"]} for record in result]
-            
-        return personas_roles_empresas
+        query = "MATCH (p1:Person)-[r1:WORKS_AT]->(e1:Company), (p2:Person)-[r2:WORKS_AT]->(e2:Company) WHERE p1 <> p2 AND r1.rol = r2.rol AND e1 <> e2 RETURN p1.name, e1.name, r1.rol, p2.name, e2.name"
+        return self.model.execute_query(query)
     
+    # MATCH (p1:Person)-[:WORKS_AT]->(e:Company)<-[:WORKS_AT]-(p2:Person)
+    # WHERE p1.name = "Persona1" AND p2.name = "Persona2"
+    # RETURN e.name
     def empresas_comunes_entre_personas(self, persona1, persona2):
-        query = """
-        MATCH (p1:Person)-[w1:WORKS_AT]->(e:Company), (p2:Person)-[w2:WORKS_AT]->(e)
-        WHERE p1.name = $persona1 AND p2.name = $persona2
-        RETURN e.name AS Empresa
-        """
-        
-        with self.model.driver.session() as session:
-            result = session.run(query, persona1=persona1, persona2=persona2)
-            empresas_comunes = [record["Empresa"] for record in result]
-            
-        return empresas_comunes
+        query = f"MATCH (p1:Person)-[:WORKS_AT]->(e:Company)<-[:WORKS_AT]-(p2:Person) WHERE p1.name = '{persona1}' AND p2.name = '{persona2}' RETURN e.name"
+        return self.model.execute_query(query)
+    
+    # MATCH (p:Person)
+    # WHERE p.id IN [LISTA_DE_PERSON_ID]
+    # RETURN p.name
+    def personas_y_funciones_equipo(self, team_id):
+        query = f"MATCH (p:Person) WHERE p.id IN {team_id} RETURN p.name"
+        return self.model.execute_query(query)
+
+    # MATCH (p:Person)
+    # WHERE p.id IN [LISTA_DE_PERSON_ID]
+    # RETURN p.name
+    def personas_y_funciones_equipo(self, personas):
+        query = f"MATCH (p:Person) WHERE p.id IN {personas} RETURN p.name"
+        return self.model.execute_query(query)
+     
